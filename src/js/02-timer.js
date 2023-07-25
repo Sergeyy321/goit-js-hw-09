@@ -1,5 +1,5 @@
 import flatpickr from "flatpickr";
-
+import Notiflix from 'notiflix';
 import "flatpickr/dist/flatpickr.min.css";
 
 // const flatpickr =require('flatpickr')
@@ -9,6 +9,15 @@ const days = document.querySelector('span[data-days]')
 const hours = document.querySelector('span[data-hours]')
 const minutes = document.querySelector('span[data-minutes]')
 const seconds = document.querySelector('span[data-seconds]')
+
+function convertMs(sec) {
+    return {
+        days: Math.floor(sec / 60 / 60 / 24).toString().padStart(2, 0),
+        hours: Math.floor((sec % (60 * 60 * 24)) / 60 / 60).toString().padStart(2, 0),
+        minutes: Math.floor((sec % (60 * 60)) / 60).toString().padStart(2, 0),
+        seconds: (sec % 60).toString().padStart(2, 0),
+    }
+}
 
 btnStart.addEventListener('click',startTimer)
 btnStart.classList.add('button--inactive')
@@ -24,7 +33,7 @@ flatpickr(document.querySelector('#datetime-picker'), {
   onClose(selectedDates) {
         dateFromUsrer = selectedDates[0];
         if (currentDate > dateFromUsrer) {
-            Notflix.Notify.failure('Please choose a date in the future') 
+            Notiflix.Notify.failure('Please choose a date in the future') 
           return  
       } else
    btnStart .classList.remove('button--inactive')        
@@ -41,7 +50,7 @@ function startTimer() {
         minutes.textContent = timerTime.minutes.toString().padStart(2, '0') 
         seconds.textContent =  timerTime.seconds.toString().padStart(2,'0') 
     } else {
-    clesrInterval(id)
-   Notflix.Notify.success('Time is over')
+    clearInterval(id)
+   Notiflix.Notify.success('Time is over')
     }       
   })}
