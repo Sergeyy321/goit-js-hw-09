@@ -1,56 +1,63 @@
 import flatpickr from "flatpickr";
-import Notiflix from 'notiflix';
 import "flatpickr/dist/flatpickr.min.css";
+import Notiflix from "notiflix";
 
-// const flatpickr =require('flatpickr')
+startBtn.disabled = true;
+const text = document.querySelector('#datetime-picker');
+const timer = document.querySelector('.timer');
+const startBtn = document.querySelector('button[data-start]');
+const days = document.querySelector('span[data-days]');
+const hours = document.querySelector('span[data-hours]');
+const minutes = document.querySelector('span[data-minutes]');
+const seconds = document.querySelector('span[data-seconds]');
 
-const btnStart =document.querySelector('button[data-start]')
-const days = document.querySelector('span[data-days]')
-const hours = document.querySelector('span[data-hours]')
-const minutes = document.querySelector('span[data-minutes]')
-const seconds = document.querySelector('span[data-seconds]')
+const options = {
+    enableTime: true,
+    time_24hr: true,
+    defaultDate: new Date(),
+    minuteIncrement: 1,
+    onClose(selectedDates) {
+        if (selectedDates[0] < new Date()) {
+            Notiflix.Notify.failure('Please choose a date in the future')
+            startBtn.disabled = true;
+        } else {
+            startBtn.disabled = false;
+        }
+    },
+  };
 
-function convertMs(sec) {
-    return {
-        days: Math.floor(sec / 60 / 60 / 24).toString().padStart(2, 0),
-        hours: Math.floor((sec % (60 * 60 * 24)) / 60 / 60).toString().padStart(2, 0),
-        minutes: Math.floor((sec % (60 * 60)) / 60).toString().padStart(2, 0),
-        seconds: (sec % 60).toString().padStart(2, 0),
-    }
-}
+  flatpickr(text, options)
+  
+  function convertMs(ms) {
+    const second = 1000;
+    const minute = second * 60;
+    const hour = minute * 60;
+    const day = hour * 24;
+    const days = Math.floor(ms / day);
+    const hours = Math.floor((ms % day) / hour);
+    const minutes = Math.floor(((ms % day) % hour) / minute)
+    const seconds = Math.floor((((ms % day) % hour) % minute) / second);
+    return { days, hours, minutes, seconds };
+  }
 
-btnStart.addEventListener('click',startTimer)
-btnStart.classList.add('button--inactive')
-let dateFromUsrer
-const currentDate = new Date()
+  function addLeadingZero(value) {
+    return value.toString().padStart(2, '0');
+  }
 
-
-flatpickr(document.querySelector('#datetime-picker'), {
-  enableTime: true,
-  time_24hr: true,
-  defaultDate: currentDate,
-  minuteIncrement: 1,
-  onClose(selectedDates) {
-        dateFromUsrer = selectedDates[0];
-        if (currentDate > dateFromUsrer) {
-            Notiflix.Notify.failure('Please choose a date in the future') 
-          return  
-      } else
-   btnStart .classList.remove('button--inactive')        
-  },
+startBtn.addEventListener('click', () => {
+    text.disabled = true;
+    let timer = setInterval(() => {
+        let countdown = new Date(text.value) - new Date();
+        startBtn.disabled = true;
+        if (countdown >= 0) {
+            let timeObject = convertMs(countdown);
+            days.textContent = addLeadingZero(timeObject.days);
+            hours.textContent = addLeadingZero(timeObject.hours);
+            minutes.textContent = addLeadingZero(timeObject.minutes);
+            seconds.textContent = addLeadingZero(timeObject.seconds);
+        } else {
+            Notiflix.Notify.success('Countdown finished');
+            clearInterval(timer);
+        }
+    }, 1000)
 })
-
-function startTimer() {
-  const id = setInterval(() =>{
-    const current = new Date()  ; 
-    const timerTime = convertMs (dateFromUsrer - current)
-    if (timerTime.seconds >= 0) {
-        days.textContent =  timerTime.days.toString().padStart(2,'0')      
-        hours.textContent =  timerTime.hours.toString().padStart(2,'0') 
-        minutes.textContent = timerTime.minutes.toString().padStart(2, '0') 
-        seconds.textContent =  timerTime.seconds.toString().padStart(2,'0') 
-    } else {
-    clearInterval(id)
-   Notiflix.Notify.success('Time is over')
-    }       
-  })}
